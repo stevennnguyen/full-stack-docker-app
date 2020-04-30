@@ -2,6 +2,7 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
+from datetime import datetime
 import os
 
 # Init app
@@ -22,22 +23,28 @@ class WarehouseColor(db.Model):
     __table_args__ = {'schema':'Warehouse'}
     __tablename__ = 'Colors'
 
-    id: int
-    data: str
+    #id: int
+    #data: str
 
     #id = db.Column('ColorID', db.Integer, primary_key=True)
     #data = db.Column('ColorName', db.String(25))
 
     id = db.Column('ColorID', db.Integer, primary_key=True)
     color = db.Column('ColorName', db.String(25))
+    lasteditedby = db.Column('LastEditedBy', db.Integer)
+    #validfrom = db.Column('ValidFrom', db.DateTime, default=datetime.utcnow)
+    #validto = db.Column('ValidTo', db.DateTime, default=datetime.utcnow)
 
-    def __init__(self, color):
+    def __init__(self, color, lasteditedby):#, validfrom, validto):
         self.color = color
+        self.lasteditedby = lasteditedby
+        #self.validfrom = validfrom
+        #self.validto = validto
 
 # Warehouse Schema
 class WarehouseColorSchema(ma.Schema):
     class Meta:
-        fields = ('id', 'color')
+        fields = ('id', 'color', 'lasteditedby')#, 'validfrom', 'validto')
 
 # Init schema
 warehousecolor_schema = WarehouseColorSchema()
@@ -47,8 +54,11 @@ warehousecolors_schema = WarehouseColorSchema(many=True)
 @app.route('/warehouse/color', methods=['POST'])
 def add_color():
     color = request.json['color']
+    lasteditedby = request.json['lasteditedby']
+    #validfrom = request.json['validfrom']
+    #validto = request.json['validto']
 
-    new_color = WarehouseColor(color)
+    new_color = WarehouseColor(color, lasteditedby)#, validfrom, validto)
 
     db.session.add(new_color)
     db.session.commit()
